@@ -250,9 +250,10 @@
 
     <aside class="dash" id="dash">
       <h2>통합 설정 대시보드</h2>
-      <p class="hint">5개 플랫폼 아이디·비밀번호를 입력하고 저장하세요. 이 기기에만 보관됩니다.</p>
+      <p class="hint">웹에 아이디만 저장해서는 배달특급에 답글이 올라가지 않습니다. 아래는 이 기기 저장용입니다. 실제 자동 등록은 PC에서 <b>python gui_app.py</b> 를 실행하세요. 목록에서는 <b>답글 여부 → 미작성</b> 후 조회해야 합니다.</p>
       <div id="platList"></div>
       <button type="button" class="save-dash" id="saveDash">계정 저장</button>
+      <button type="button" class="save-dash" id="downloadEnv" style="margin-top:8px;background:#191f28">PC 실행용 .env 내려받기</button>
     </aside>
   </div>
   <nav class="nav" aria-label="화면 전환">
@@ -361,6 +362,33 @@
       localStorage.setItem(KEYS.dash, JSON.stringify(collectDash()));
       renderDash();
       showToast('대시보드 계정을 저장했어요');
+    });
+    $('downloadEnv').addEventListener('click', () => {
+      const dash = collectDash();
+      const api = (apiKeyEl.value || localStorage.getItem(KEYS.api) || '').trim();
+      const guide = (promptEl.value || '').trim();
+      const lines = [
+        'GEMINI_API_KEY=' + api,
+        'REPLY_TONE=' + replyTone,
+        'STORE_GUIDE=' + guide,
+        'HEADFUL=true',
+        'BAEMIN_ID=' + (dash.baemin && dash.baemin.id || ''),
+        'BAEMIN_PW=' + (dash.baemin && dash.baemin.pw || ''),
+        'COUPANG_ID=' + (dash.coupang && dash.coupang.id || ''),
+        'COUPANG_PW=' + (dash.coupang && dash.coupang.pw || ''),
+        'YOGIYO_ID=' + (dash.yogiyo && dash.yogiyo.id || ''),
+        'YOGIYO_PW=' + (dash.yogiyo && dash.yogiyo.pw || ''),
+        'DDANGYO_ID=' + (dash.ddangyo && dash.ddangyo.id || ''),
+        'DDANGYO_PW=' + (dash.ddangyo && dash.ddangyo.pw || ''),
+        'SPECIAL_ID=' + (dash.special && dash.special.id || ''),
+        'SPECIAL_PW=' + (dash.special && dash.special.pw || '')
+      ];
+      const blob = new Blob([lines.join('\r\n')], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '.env';
+      a.click();
+      showToast('.env 파일을 프로젝트 폴더에 넣어 주세요');
     });
 
     document.querySelectorAll('.tone').forEach((btn) => {

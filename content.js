@@ -126,8 +126,105 @@ function injectValue(textarea, value) {
   textarea.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
+function waitForTextarea(ms) {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    const tick = () => {
+      const ta = [...document.querySelectorAll('textarea')].find((el) => el.offsetParent !== null);
+      if (ta) return resolve(ta);
+      if (Date.now() - start > ms) return resolve(null);
+      setTimeout(tick, 200);
+    };
+    tick();
+  });
+}
+
+function parsePaycoRow(row) {
+  const tds = [...row.querySelectorAll('td')];
+  const cells = tds.map((td) => (td.innerText || '').trim());
+  let star = null;
+  cells.forEach((c) => {
+    if (/^[1-5]$/.test(c)) star = Number(c);
+  });
+  const review = cells[6] || cells.sort((a, b) => b.length - a.length)[0] || row.innerText;
+  const menu = cells[7] || '';
+  return { reviewText: stripUiNoise(review).slice(0, 1800), starRating: star, menu };
+}
+
+function runPaycoGenerate(btn, ctx) {
+  chrome.storage.sync.get(['geminiApiKey', 'customPrompt', 'replyTone'], async (items) => {
+    if (!items.geminiApiKey) {
+      alert('확장 프로그램 아이콘을 눌러 Gemini API 키를 먼저 저장해주세요.');
+      return;
+    }
+    btn.disabled = true;
+    btn.classList.add('is-loading');
+    btn.textContent = '⏳ 작성 중...';
+    try {
+      const packed = {
+        reviewText: ctx.reviewText,
+        starRating: ctx.starRating,
+        complaints: COMPLAINT_KEYWORDS.filter((w) => ctx.reviewText.includes(w)),
+        praises: PRAISE_KEYWORDS.filter((w) => ctx.reviewText.includes(w)),
+        strategy: (ctx.starRating != null && ctx.starRating <= 3)
+          ? '사과와 개선 약속 위주.'
+          : '감사와 재주문 유도.'
+      };
+      const reply = await generateAIReply(packed, items.geminiApiKey, items.customPrompt, items.replyTone);
+      const ta = await waitForTextarea(10000);
+      if (!ta) {
+        throw new Error('답글 입력창이 없습니다. 리뷰 행을 눌러 상세/답글 창을 연 뒤 다시 시도하세요.');
+      }
+      injectValue(ta, reply);
+      btn.classList.remove('is-loading');
+      btn.classList.add('is-done');
+      btn.textContent = '✅ 완료';
+    } catch (err) {
+      alert('오류: ' + err.message);
+      btn.classList.remove('is-loading', 'is-done');
+      btn.textContent = '✨ AI 답글';
+      btn.disabled = false;
+      return;
+    }
+    setTimeout(() => {
+      btn.classList.remove('is-done', 'is-loading');
+      btn.textContent = '✨ AI 답글';
+      btn.disabled = false;
+    }, 2200);
+  });
+}
+
+function injectPaycoRowButtons() {
+  if (!/payco\.kr|specialdelivery\.co\.kr/.test(location.hostname)) return;
+  if (!/review/i.test(location.pathname + location.href)) return;
+  ensureButtonStyles();
+  document.querySelectorAll('table tbody tr').forEach((row) => {
+    if (row.getAttribute('data-ai-injected') === 'true') return;
+    const line = (row.innerText || '').trim();
+    if (line.length < 8) return;
+    row.setAttribute('data-ai-injected', 'true');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ai-reply-btn';
+    btn.textContent = '✨ AI 답글';
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (btn.disabled) return;
+      const ctx = parsePaycoRow(row);
+      const tds = row.querySelectorAll('td');
+      if (tds[6]) tds[6].click();
+      else row.click();
+      runPaycoGenerate(btn, ctx);
+    });
+    const last = row.querySelector('td:last-child') || row;
+    last.appendChild(btn);
+  });
+}
+
 function injectAIButtons() {
   ensureButtonStyles();
+  injectPaycoRowButtons();
   document.querySelectorAll('textarea:not([data-ai-injected="true"])').forEach((textarea) => {
     textarea.setAttribute('data-ai-injected', 'true');
     const btn = document.createElement('button');
