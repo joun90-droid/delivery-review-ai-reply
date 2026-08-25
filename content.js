@@ -89,7 +89,7 @@ function extractReviewContext(textarea) {
 }
 
 async function generateAIReply(ctx, apiKey, customPrompt, replyTone) {
-  const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey);
+  const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=' + encodeURIComponent(apiKey);
   const toneGuide = TONE_INSTRUCTIONS[replyTone] || TONE_INSTRUCTIONS.polite;
   const shop = customPrompt || '배달 음식점 사장님';
   const starLine = ctx.starRating != null ? ctx.starRating + '점' : '확인 불가';

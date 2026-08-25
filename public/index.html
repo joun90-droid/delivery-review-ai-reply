@@ -85,7 +85,9 @@
     label.lbl { display: block; font-size: 12px; font-weight: 600; color: var(--sub); margin: 12px 0 6px; }
     .grid2 { display: grid; grid-template-columns: 1fr; gap: 8px; }
     @media (min-width: 520px) { .grid2 { grid-template-columns: 1fr 1fr; } }
-    .field, textarea.field { width: 100%; font-size: 16px; }
+    .pw-row { display: flex; gap: 6px; }
+    .pw-row input { flex: 1; }
+    .eye { width: 44px; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; }
     textarea.field { min-height: 120px; resize: vertical; line-height: 1.5; }
     .fold > summary {
       list-style: none; cursor: pointer; font-weight: 700; font-size: 14px; padding: 4px 0 10px;
@@ -157,6 +159,16 @@
     <section class="panel">
       <h2>리뷰 · 매장 설정</h2>
       <div class="tabs" id="platformTabs"></div>
+      <div class="acct" id="acctBox">
+        <label class="lbl" for="platId">사장님 아이디</label>
+        <input class="field" id="platId" placeholder="선택한 플랫폼 로그인 아이디" autocomplete="username">
+        <label class="lbl" for="platPw">사장님 비밀번호</label>
+        <div class="pw-row">
+          <input class="field" id="platPw" type="password" placeholder="비밀번호" autocomplete="current-password">
+          <button type="button" class="eye" id="pwToggle" aria-label="비밀번호 표시"><i class="fa-regular fa-eye"></i></button>
+        </div>
+        <p class="lbl" id="acctHint" style="margin-top:8px">아이디·비밀번호는 이 기기에만 저장됩니다. 웹에서 생성한 답글은 복사해 사장님 사이트에 붙여넣거나, PC에서 python gui_app.py 로 자동 등록합니다.</p>
+      </div>
       <label class="lbl">별점</label>
       <div class="stars" id="stars"></div>
       <div class="grid2">
@@ -235,7 +247,14 @@
       tags: [],
       stores: ['기본 매장'],
       store: '기본 매장',
-      options: []
+      options: [],
+      accounts: {
+        baemin: { id: '', pw: '' },
+        coupang: { id: '', pw: '' },
+        yogiyo: { id: '', pw: '' },
+        ddangyo: { id: '', pw: '' },
+        special: { id: '', pw: '' }
+      }
     };
 
     function load() {
@@ -251,7 +270,8 @@
         tone: state.tone,
         platform: state.platform,
         stores: state.stores,
-        store: $('storeSelect').value
+        store: $('storeSelect').value,
+        accounts: state.accounts
       };
       localStorage.setItem(LS, JSON.stringify(data));
     }
@@ -289,6 +309,7 @@
         const b = e.target.closest('.ptab');
         if (!b) return;
         state.platform = b.dataset.k;
+        fillAccount();
         renderPlatforms();
         save();
       };
@@ -326,6 +347,17 @@
         const t = b.textContent;
         state.tags = state.tags.includes(t) ? state.tags.filter((x) => x !== t) : state.tags.concat(t);
         renderTags();
+      };
+    }
+    function fillAccount() {
+      const row = state.accounts[state.platform] || { id: '', pw: '' };
+      $('platId').value = row.id || '';
+      $('platPw').value = row.pw || '';
+    }
+    function readAccount() {
+      state.accounts[state.platform] = {
+        id: $('platId').value.trim(),
+        pw: $('platPw').value
       };
     }
     function renderStores() {
@@ -412,7 +444,7 @@ ${review}
 [OPTION_3]`;
       try {
         const res = await fetch(
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(DEFAULT_GEMINI_KEY),
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=' + encodeURIComponent(DEFAULT_GEMINI_KEY),
           { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) }
         );
         const data = await res.json();
@@ -442,10 +474,20 @@ ${review}
       state.platform = saved.platform || 'baemin';
       state.stores = saved.stores && saved.stores.length ? saved.stores : ['기본 매장'];
       state.store = saved.store || state.stores[0];
-      renderPlatforms(); renderStars(); renderTones(); renderTags(); renderStores();
-      ['storeName','headerText','footerText','headOn','tailOn'].forEach((id) => {
-        $(id).addEventListener('change', () => { renderStores(); save(); });
-        $(id).addEventListener('input', save);
+      if (saved.accounts) {
+        Object.keys(state.accounts).forEach((k) => {
+          if (saved.accounts[k]) state.accounts[k] = saved.accounts[k];
+        });
+      }
+      renderPlatforms(); renderStars(); renderTones(); renderTags(); renderStores(); fillAccount();
+      ['storeName','headerText','footerText','headOn','tailOn','platId','platPw'].forEach((id) => {
+        $(id).addEventListener('change', () => { readAccount(); renderStores(); save(); });
+        $(id).addEventListener('input', () => { readAccount(); save(); });
+      });
+      $('pwToggle').addEventListener('click', () => {
+        const hide = $('platPw').type === 'password';
+        $('platPw').type = hide ? 'text' : 'password';
+        $('pwToggle').innerHTML = hide ? '<i class="fa-regular fa-eye-slash"></i>' : '<i class="fa-regular fa-eye"></i>';
       });
       $('storeSelect').addEventListener('change', () => {
         state.store = $('storeSelect').value;

@@ -24,7 +24,7 @@ def generate_reply(review_text: str, star_rating: int | None = None, menu_name: 
         raise RuntimeError("GEMINI_API_KEY 가 .env 에 없습니다.")
 
     genai.configure(api_key=config.GEMINI_API_KEY)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-3.6-flash")
     star_line = f"{star_rating}점" if star_rating else "미확인"
     menu_line = menu_name.strip() or "미확인"
     prompt = f"""너는 한국 배달 음식점 사장님이다. 답글 본문만 출력한다.
