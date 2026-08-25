@@ -140,11 +140,12 @@ class BasePlatform(ABC):
         submit.click()
         self.human_pause(0.8, 1.4)
 
-    def run(self, generate_fn, max_replies: int) -> int:
+    def run(self, generate_fn, max_replies: int, log=print) -> int:
         done = 0
         self.login()
         self.open_reviews()
         reviews = self.collect_unanswered(max_replies)
+        log(f"[{self.name}] 미답변 리뷰 {len(reviews)}건 감지")
         for item in reviews:
             if item.already_replied:
                 continue
@@ -152,7 +153,9 @@ class BasePlatform(ABC):
             try:
                 self.write_reply_on_card(item.card_index, reply)
                 done += 1
-            except Exception:
+                log(f"[{self.name}] AI 답글 등록 완료 ({done}/{len(reviews)})")
+            except Exception as exc:
+                log(f"[{self.name}] 등록 실패: {exc}")
                 continue
         return done
 

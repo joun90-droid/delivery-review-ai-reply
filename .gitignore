@@ -9,5 +9,7 @@ venv/
 .env
 .env.local
 !.env.example
+.secrets.key
+.settings.enc
 *.log
 .DS_Store
