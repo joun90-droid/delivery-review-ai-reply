@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "배달 리뷰 AI 자동 답글",
+  "version": "1.0.0",
+  "description": "모든 배달 플랫폼 리뷰에 AI 답글을 채워줍니다.",
+  "permissions": [
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://ceo.baemin.com/*",
+        "https://store.coupangeats.com/*",
+        "https://partner.yogiyo.co.kr/*",
+        "https://boss.ddangyo.com/*",
+        "https://boss2.shinhan.com/*",
+        "https://partner.payco.kr/*",
+        "https://www.specialdelivery.co.kr/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

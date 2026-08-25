@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>배달 리뷰 AI 자동 답글</title>
+  <style>
+    :root { --bg:#f4f5f7; --text:#191f28; --sub:#8b95a1; --blue:#3182f6; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      min-height:100vh;
+      background:var(--bg);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo",sans-serif;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:32px 16px;
+    }
+    .card {
+      width:100%;
+      max-width:420px;
+      background:#fff;
+      border-radius:24px;
+      padding:32px 28px;
+      box-shadow:0 1px 3px rgba(0,0,0,.06);
+    }
+    .logo {
+      width:48px; height:48px; border-radius:14px;
+      background:linear-gradient(160deg,#4b8bff,#3182f6);
+      display:grid; place-items:center; color:#fff; font-size:22px;
+      margin-bottom:16px;
+    }
+    h1 { font-size:22px; letter-spacing:-.5px; margin-bottom:8px; }
+    p { font-size:15px; color:var(--sub); line-height:1.55; margin-bottom:22px; }
+    ol { padding-left:18px; color:var(--text); font-size:14px; line-height:1.7; margin-bottom:24px; }
+    a.btn {
+      display:block; text-align:center; text-decoration:none;
+      background:var(--blue); color:#fff; font-weight:700;
+      padding:14px; border-radius:14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">✦</div>
+    <h1>배달 리뷰 AI 자동 답글</h1>
+    <p>배민·쿠팡이츠 등 사장님 페이지에서 리뷰 답글을 AI로 작성하는 크롬 확장 프로그램입니다.</p>
+    <ol>
+      <li>Chrome에서 확장 프로그램 개발자 모드를 켭니다.</li>
+      <li>GitHub에서 폴더를 받아 “압축해제된 확장 프로그램을 로드”합니다.</li>
+      <li>팝업에서 Gemini API 키와 답글 톤을 저장합니다.</li>
+    </ol>
+    <a class="btn" id="gh" href="#">GitHub에서 보기</a>
+  </div>
+  <script>
+    document.getElementById('gh').href = 'https://github.com/joun90-droid/delivery-review-ai-reply';
+  </script>
+</body>
+</html>
