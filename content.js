@@ -99,11 +99,150 @@ function setButtonLabel(btn, text) {
   });
 }
 
-async function generateAIReply(reviewText, apiKey, customPrompt, replyTone) {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+const COMPLAINT_KEYWORDS = [
+  '별로', '최악', '실망', '늦었', '늦은', '차갑', '식었', '불친절', '취소', '환불',
+  '누락', '빠졌', '잘못', '짜증', '화나', '냄새', '비위생', '적어요', '적어', '짜요',
+  '싱거', '딱딱', '탔어', '타서', '배달사고', '연락', '다시는', '비추', '별로예',
+  '별로요', '최악이', '후회', '기다리', '안 옴', '안옴', '식어', '차가운', '불만',
+  '클레임', '항의', '엉망', '대충', '맛없', '느끼', '느끼해', '기름'
+];
+
+const PRAISE_KEYWORDS = [
+  '최고', '맛있', '친절', '빠르', '또 시', '재주문', '단골', '감동', '완벽', '굿',
+  '추천', '만족', '최고예', '최고요', '존맛', '대박', '최고입', '최고습', '잘 먹',
+  '잘먹', '너무 좋', '최고다', '최고네'
+];
+
+function stripUiNoise(text) {
+  return text
+    .replace(IDLE_LABEL, '')
+    .replace(ANALYZE_LABEL, '')
+    .replace(DONE_LABEL, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function countFilledStars(root) {
+  const selectors = [
+    '[class*="star"][class*="on"]',
+    '[class*="star"][class*="fill"]',
+    '[class*="star"][class*="active"]',
+    '[class*="Star"][class*="on"]',
+    '[aria-checked="true"]',
+    'svg[class*="fill"]',
+    'img[src*="star"][src*="on"]'
+  ];
+  let count = 0;
+  selectors.forEach((sel) => {
+    count = Math.max(count, root.querySelectorAll(sel).length);
+  });
+  if (count >= 1 && count <= 5) return count;
+  return null;
+}
+
+function parseStarRating(raw) {
+  const text = raw || '';
+  const patterns = [
+    /별점\s*[:：]?\s*([1-5](?:\.\d)?)/,
+    /평점\s*[:：]?\s*([1-5](?:\.\d)?)/,
+    /([1-5](?:\.\d)?)\s*점(?!\s*만점)/,
+    /([1-5](?:\.\d)?)\s*\/\s*5/,
+    /rating[:\s]*([1-5](?:\.\d)?)/i,
+    /★{1,5}/,
+    /⭐{1,5}/
+  ];
+  for (const re of patterns) {
+    const m = text.match(re);
+    if (!m) continue;
+    if (m[0].startsWith('★') || m[0].startsWith('⭐')) return m[0].length;
+    const n = parseFloat(m[1]);
+    if (n >= 1 && n <= 5) return n;
+  }
+  return null;
+}
+
+function findMatchedKeywords(text, keywords) {
+  return keywords.filter((word) => text.includes(word));
+}
+
+function classifyReview(starRating, reviewText) {
+  const complaints = findMatchedKeywords(reviewText, COMPLAINT_KEYWORDS);
+  const praises = findMatchedKeywords(reviewText, PRAISE_KEYWORDS);
+  const lowStar = starRating != null && starRating <= 3;
+  const fiveStar = starRating != null && starRating >= 4.8;
+
+  if (lowStar || complaints.length >= 1) {
+    return {
+      type: 'negative',
+      strategy: '사과와 개선 약속 위주. 변명·반박은 최소화. 지적된 문제를 짧게 인정하고, 재발 방지·개선 조치를 구체적으로 약속. 재주문 유도는 하지 않거나 아주 절제.',
+      complaints,
+      praises
+    };
+  }
+  if (fiveStar || (praises.length >= 1 && complaints.length === 0 && (starRating == null || starRating >= 4))) {
+    return {
+      type: 'praise',
+      strategy: '감사 인사와 재주문 유도. 칭찬 포인트를 한 가지 짚어 화답하고, 다음에도 찾아달라는 따뜻한 멘트 포함.',
+      complaints,
+      praises
+    };
+  }
+  return {
+    type: 'mixed',
+    strategy: '좋은 점은 짧게 감사하고, 아쉬운 점은 사과와 개선 약속. 과한 재주문 유도는 피함.',
+    complaints,
+    praises
+  };
+}
+
+function extractReviewContext(textarea) {
+  const card = textarea.closest('article, li, [class*="review"], [class*="Review"], section, div') || textarea.parentElement;
+  const raw = stripUiNoise(card.innerText || '');
+  const ariaBits = [...card.querySelectorAll('[aria-label], [title]')].map((el) => {
+    return [el.getAttribute('aria-label'), el.getAttribute('title')].filter(Boolean).join(' ');
+  }).join(' ');
+  const starFromDom = countFilledStars(card);
+  const starFromText = parseStarRating(`${raw} ${ariaBits}`);
+  const starRating = starFromDom || starFromText;
+  const classification = classifyReview(starRating, raw);
+  return {
+    reviewText: raw.slice(0, 1800),
+    starRating,
+    ...classification
+  };
+}
+
+function buildPrompt(ctx, customPrompt, replyTone) {
   const toneGuide = TONE_INSTRUCTIONS[replyTone] || TONE_INSTRUCTIONS.polite;
   const instruction = customPrompt || '배달 음식점 사장님 답글';
-  const prompt = `[답글 톤]: ${toneGuide}\n[매장 지침]: ${instruction}\n\n[고객 리뷰]: "${reviewText}"\n\n위 리뷰에 대한 사장님 맞춤 답글만 작성해줘. 답글 본문만 출력.`;
+  const starLine = ctx.starRating != null ? `${ctx.starRating}점` : '확인 불가(본문·키워드로 판단)';
+  return `[역할] 배달 플랫폼 사장님 답글 작성자. 답글 본문만 출력.
+
+[답글 톤] ${toneGuide}
+[매장 지침] ${instruction}
+
+[리뷰 분석]
+- 별점: ${starLine}
+- 분류: ${ctx.type}
+- 불만 키워드: ${ctx.complaints.length ? ctx.complaints.join(', ') : '없음'}
+- 칭찬 키워드: ${ctx.praises.length ? ctx.praises.join(', ') : '없음'}
+- 작성 전략: ${ctx.strategy}
+
+[고객 리뷰·주변 텍스트]
+"""
+${ctx.reviewText}
+"""
+
+규칙:
+- 분류가 negative면 진심 어린 사과 + 개선 약속을 중심으로 쓰고, 자랑·재주문 유도는 넣지 마.
+- 분류가 praise(특히 5점·칭찬)면 감사 + 재주문/단골 유도 멘트를 자연스럽게 넣어.
+- 리뷰에 나온 메뉴·이슈를 한 가지 이상 구체적으로 언급해.
+- 가짜 할인 쿠폰 남발 금지. 마크다운·따옴표 없이 답글만.`;
+}
+
+async function generateAIReply(ctx, apiKey, customPrompt, replyTone) {
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const prompt = buildPrompt(ctx, customPrompt, replyTone);
 
   const response = await fetch(endpoint, {
     method: 'POST',
@@ -136,12 +275,7 @@ function injectAIButtons() {
           alert('브라우저 우측 상단 퍼즐 아이콘을 눌러 API 키를 먼저 저장해주세요!');
           return;
         }
-        const parentCard = textarea.closest('div, li, section') || textarea.parentElement;
-        const reviewText = parentCard.innerText
-          .replace(IDLE_LABEL, '')
-          .replace(ANALYZE_LABEL, '')
-          .replace(DONE_LABEL, '')
-          .trim();
+        const ctx = extractReviewContext(textarea);
 
         btn.disabled = true;
         btn.classList.remove('is-done');
@@ -150,7 +284,7 @@ function injectAIButtons() {
 
         try {
           const reply = await generateAIReply(
-            reviewText,
+            ctx,
             items.geminiApiKey,
             items.customPrompt,
             items.replyTone
