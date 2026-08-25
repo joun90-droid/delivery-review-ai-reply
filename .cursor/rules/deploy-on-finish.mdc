@@ -1,0 +1,17 @@
+---
+description: Finish every task with GitHub push, Firebase deploy, and URLs
+alwaysApply: true
+---
+
+# Deploy when work is done
+
+When a coding task in this workspace is finished, do not ask. Immediately:
+
+1. Commit the relevant files (never `.env`, API keys, or credentials).
+2. Push to GitHub `origin` (`joun90-droid/delivery-review-ai-reply`, branch `main`).
+3. Deploy Firebase Hosting: `firebase deploy --only hosting --project vaulted-acolyte-387217` (site `jeonyoungjae-review-ai`).
+4. If there is nothing to commit, still deploy if hosting files changed; skip push if already up to date.
+5. End the reply with both URLs:
+
+- GitHub: https://github.com/joun90-droid/delivery-review-ai-reply
+- Live: https://jeonyoungjae-review-ai.web.app
