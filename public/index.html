@@ -3,520 +3,461 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#3182f6">
+  <meta name="theme-color" content="#191f28">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="mobile-web-app-capable" content="yes">
-  <title>리뷰 답글 AI</title>
+  <title>리뷰 답글 AI · 매장 대시보드</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
     :root {
-      --bg: #f4f5f7;
-      --card: #ffffff;
+      --bg: #f2f4f6;
+      --card: #fff;
       --text: #191f28;
       --sub: #8b95a1;
+      --line: #e5e8eb;
       --blue: #3182f6;
-      --blue-soft: #e8f3ff;
+      --soft: #e8f3ff;
       --ok: #00c471;
+      --baemin: #2ac1bc;
+      --coupang: #3478f6;
+      --yogiyo: #fa0050;
+      --ddangyo: #ff7a00;
+      --special: #7b61ff;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { -webkit-text-size-adjust: 100%; }
     body {
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", sans-serif;
       background: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Pretendard", "Apple SD Gothic Neo", sans-serif;
-      -webkit-font-smoothing: antialiased;
       min-height: 100dvh;
-      padding: 12px 12px calc(88px + env(safe-area-inset-bottom));
-      padding-left: max(12px, env(safe-area-inset-left));
-      padding-right: max(12px, env(safe-area-inset-right));
     }
-    .shell {
-      width: 100%;
-      max-width: 1180px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      align-items: start;
-    }
-    header.top {
-      grid-column: 1 / -1;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    header.top .grow { flex: 1; min-width: 0; }
-    .logo {
-      width: 44px; height: 44px; border-radius: 14px;
-      background: linear-gradient(160deg, #4b8bff, #3182f6);
-      color: #fff; display: grid; place-items: center; font-size: 18px;
-      box-shadow: 0 8px 16px rgba(49,130,246,.28);
-    }
-    h1 { font-size: 18px; letter-spacing: -.4px; }
-    .sub { font-size: 12px; color: var(--sub); margin-top: 2px; }
-    .card {
-      background: var(--card);
-      border-radius: 18px;
-      padding: 14px;
-      margin-bottom: 10px;
-      box-shadow: 0 1px 2px rgba(0,0,0,.04);
-    }
-    .acc-head {
-      width: 100%; border: 0; background: transparent;
-      display: flex; align-items: center; justify-content: space-between;
-      font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; color: var(--text);
-    }
-    .acc-head i { color: var(--sub); transition: transform .2s; }
-    .acc-head.open i { transform: rotate(180deg); }
-    .acc-body { display: none; padding-top: 12px; }
-    .acc-body.show { display: block; }
-    label { display: block; font-size: 12px; font-weight: 600; color: var(--sub); margin: 10px 0 6px; }
-    input, textarea {
-      width: 100%; border: 1px solid transparent; background: #f2f4f6;
-      border-radius: 12px; padding: 12px; font: inherit; font-size: 16px; color: var(--text); outline: none;
-    }
-    input:focus, textarea:focus {
-      background: #fff; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(49,130,246,.12);
-    }
-    textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
-    .tones { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .tone {
-      border: 1.5px solid transparent; background: #f2f4f6; border-radius: 14px;
-      padding: 12px 10px; text-align: left; cursor: pointer; font: inherit;
-    }
-    .tone strong { display: block; font-size: 13px; }
-    .tone span { display: block; font-size: 11px; color: var(--sub); margin-top: 3px; }
-    .tone.active { background: var(--blue-soft); border-color: var(--blue); }
-    .primary {
-      width: 100%; margin-top: 10px; border: 0; border-radius: 14px; padding: 14px;
-      min-height: 48px;
-      background: linear-gradient(135deg, #5b8def, #3182f6);
-      color: #fff; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
-      box-shadow: 0 8px 18px rgba(49,130,246,.28);
-    }
-    .primary:disabled { opacity: .6; cursor: default; }
-    .results { display: grid; gap: 10px; }
-    .option {
-      background: var(--card); border-radius: 18px; padding: 14px;
-      box-shadow: 0 1px 2px rgba(0,0,0,.04);
-    }
-    .option h3 { font-size: 13px; color: var(--blue); margin-bottom: 8px; }
-    .option p { font-size: 14.5px; line-height: 1.6; white-space: pre-wrap; }
-    .copy {
-      margin-top: 12px; width: 100%; border: 0; border-radius: 12px; padding: 11px;
-      background: #f2f4f6; font: inherit; font-weight: 700; font-size: 13px; cursor: pointer;
-    }
-    .copy.copied { background: #e8fff4; color: var(--ok); }
-    .empty { text-align: center; color: var(--sub); font-size: 13px; padding: 18px 8px; }
-    .col-left, .dash { min-width: 0; }
-    .dash {
-      display: none;
-      background: #fff;
-      border-radius: 20px;
-      padding: 16px;
-      box-shadow: 0 1px 2px rgba(0,0,0,.04);
-    }
-    body.tab-dash .col-left { display: none; }
-    body.tab-dash .dash { display: block; }
-    .nav {
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      background: rgba(255,255,255,.94);
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding: 12px 16px; padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+      background: rgba(255,255,255,.92);
       backdrop-filter: blur(12px);
-      border-top: 1px solid rgba(0,0,0,.06);
-      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-      z-index: 30;
+      border-bottom: 1px solid var(--line);
     }
-    .nav button {
-      border: 0; background: transparent; font: inherit; font-size: 12px; font-weight: 700;
-      color: var(--sub); padding: 8px; border-radius: 12px; min-height: 48px; cursor: pointer;
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(160deg, #4b8bff, #3182f6);
+      color: #fff; display: grid; place-items: center;
     }
-    .nav button i { display: block; font-size: 16px; margin-bottom: 4px; }
-    .nav button.active { color: var(--blue); background: var(--blue-soft); }
-    .dash h2 { font-size: 16px; margin-bottom: 4px; }
-    .dash .hint { font-size: 12px; color: var(--sub); margin-bottom: 12px; }
-    .p-card {
-      border: 2px solid;
-      border-radius: 16px;
-      padding: 12px;
-      margin-bottom: 10px;
+    .brand strong { font-size: 15px; display: block; }
+    .brand span { font-size: 11px; color: var(--sub); }
+    .topbar .right { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    select, input, textarea, button { font: inherit; }
+    .store-select, .field {
+      border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 8px 10px; color: var(--text);
     }
-    .p-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-    .p-top strong { font-size: 14px; }
+    .badge {
+      font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 999px;
+      background: #e8fff4; color: var(--ok);
+    }
+    .wrap {
+      max-width: 1280px; margin: 0 auto;
+      padding: 16px; padding-bottom: calc(24px + env(safe-area-inset-bottom));
+      display: grid; grid-template-columns: 1fr; gap: 14px;
+    }
+    @media (min-width: 960px) {
+      .wrap { grid-template-columns: minmax(320px, 440px) minmax(0, 1fr); align-items: start; }
+    }
+    .panel {
+      background: var(--card); border-radius: 18px; padding: 16px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    }
+    .panel h2 { font-size: 15px; margin-bottom: 12px; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .ptab {
+      border: 0; border-radius: 999px; padding: 7px 10px; font-size: 12px; font-weight: 700;
+      background: #f2f4f6; color: var(--text); cursor: pointer;
+    }
+    .ptab.active { color: #fff; }
+    .stars { display: flex; gap: 6px; flex-wrap: wrap; }
+    .star {
+      width: 40px; height: 40px; border: 0; border-radius: 10px; background: #f2f4f6;
+      font-size: 16px; cursor: pointer;
+    }
+    .star.on { background: #fff4e5; }
+    label.lbl { display: block; font-size: 12px; font-weight: 600; color: var(--sub); margin: 12px 0 6px; }
+    .grid2 { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    @media (min-width: 520px) { .grid2 { grid-template-columns: 1fr 1fr; } }
+    .field, textarea.field { width: 100%; font-size: 16px; }
+    textarea.field { min-height: 120px; resize: vertical; line-height: 1.5; }
+    .fold > summary {
+      list-style: none; cursor: pointer; font-weight: 700; font-size: 14px; padding: 4px 0 10px;
+    }
+    .fold > summary::-webkit-details-marker { display: none; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 8px 0; }
     .switch { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
     .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute; inset: 0; background: #d1d6db; border-radius: 999px; cursor: pointer;
+    .knob { position: absolute; inset: 0; background: #d1d6db; border-radius: 999px; }
+    .knob:before { content: ""; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+    .switch input:checked + .knob { background: var(--blue); }
+    .switch input:checked + .knob:before { transform: translateX(18px); }
+    .tones { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .tone {
+      border: 1.5px solid transparent; background: #f2f4f6; border-radius: 12px; padding: 10px; text-align: left; cursor: pointer; font-size: 12px; font-weight: 700;
     }
-    .slider:before {
-      content: ""; position: absolute; height: 18px; width: 18px; left: 3px; top: 3px;
-      background: #fff; border-radius: 50%; transition: .2s;
+    .tone.active { background: var(--soft); border-color: var(--blue); }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      border: 0; border-radius: 999px; padding: 6px 10px; font-size: 12px; background: #f2f4f6; cursor: pointer;
     }
-    .switch input:checked + .slider:before { transform: translateX(18px); }
-    .pw-row { display: flex; gap: 6px; }
-    .pw-row input { flex: 1; }
-    .eye {
-      width: 48px; min-height: 48px; border: 0; border-radius: 12px; background: #f2f4f6; cursor: pointer; color: #191f28;
+    .tag.on { background: var(--soft); color: var(--blue); font-weight: 700; }
+    .go {
+      width: 100%; margin-top: 14px; border: 0; border-radius: 14px; min-height: 48px;
+      background: linear-gradient(135deg, #5b8def, #3182f6); color: #fff; font-weight: 800; cursor: pointer;
     }
-    .p-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
-    .st { font-size: 12px; color: var(--sub); }
-    .st.ok { color: var(--ok); }
-    .save-dash {
-      width: 100%; border: 0; border-radius: 14px; padding: 13px; margin-top: 4px;
-      background: #3182f6; color: #fff; font: inherit; font-weight: 700; cursor: pointer;
+    .go:disabled { opacity: .6; }
+    .preview-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .cards { display: grid; gap: 12px; }
+    .reply {
+      border: 1px solid var(--line); border-radius: 16px; padding: 12px; background: #fafbfc;
     }
+    .reply h3 { font-size: 13px; color: var(--blue); margin-bottom: 8px; }
+    .reply textarea {
+      width: 100%; min-height: 110px; border: 0; background: transparent; resize: vertical; line-height: 1.55; font-size: 15px; color: var(--text);
+    }
+    .meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--sub); margin: 6px 0 8px; }
+    .meta.warn { color: #f04452; }
+    .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .actions button {
+      flex: 1; min-width: 120px; border: 0; border-radius: 10px; padding: 10px; font-size: 13px; font-weight: 700; cursor: pointer; background: #fff; border: 1px solid var(--line);
+    }
+    .actions .copy { background: var(--blue); color: #fff; border: 0; }
+    .empty { text-align: center; color: var(--sub); padding: 40px 12px; font-size: 14px; }
     .toast {
-      position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom));
-      transform: translateX(-50%) translateY(20px);
-      background: #191f28; color: #fff; padding: 11px 16px; border-radius: 999px;
-      font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none;
-      transition: .22s ease; z-index: 40; max-width: calc(100vw - 24px);
-      white-space: normal; text-align: center;
+      position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(12px);
+      background: #191f28; color: #fff; padding: 12px 16px; border-radius: 999px; font-size: 13px; font-weight: 700;
+      opacity: 0; pointer-events: none; transition: .2s; z-index: 50; max-width: calc(100vw - 24px); text-align: center;
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    @media (min-width: 640px) {
-      body { padding: 16px 20px calc(88px + env(safe-area-inset-bottom)); }
-    }
-    @media (min-width: 900px) {
-      body { padding: 20px 24px 32px; }
-      body.tab-dash .col-left, body .col-left { display: block; }
-      body .dash { display: block; }
-      .shell {
-        grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
-        gap: 16px;
-      }
-      .dash {
-        position: sticky;
-        top: 12px;
-        max-height: calc(100dvh - 24px);
-        overflow: auto;
-      }
-      .nav { display: none; }
-      .toast { bottom: 28px; }
-    }
-    @media (min-width: 1180px) {
-      .shell { grid-template-columns: minmax(0, 1fr) 420px; }
-    }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <header class="top">
-      <div class="logo"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-      <div class="grow">
-        <h1>실시간 AI 리뷰 답글</h1>
-        <p class="sub">폰은 아래 탭, PC는 한 화면에 답글과 대시보드</p>
-      </div>
-    </header>
-
-    <div class="col-left">
-      <section class="card">
-        <button type="button" class="acc-head" id="accToggle" aria-expanded="false">
-          <span><i class="fa-solid fa-gear" style="margin-right:8px;color:#3182f6"></i>설정 (API 키 · 매장 지침)</span>
-          <i class="fa-solid fa-chevron-down"></i>
-        </button>
-        <div class="acc-body" id="accBody">
-          <label for="apiKey">Gemini API 키</label>
-          <input type="password" id="apiKey" placeholder="API 키를 붙여넣기" autocomplete="off">
-          <label for="prompt">매장 기본 지침</label>
-          <textarea id="prompt" placeholder="예: 매장명, 메뉴, 이모지 사용 여부"></textarea>
-          <button type="button" class="primary" id="saveSettings" style="margin-top:12px">설정 저장</button>
-        </div>
-      </section>
-
-      <section class="card">
-        <label style="margin-top:0">톤앤매너</label>
-        <div class="tones" id="tones">
-          <button type="button" class="tone active" data-tone="kind"><strong>😊 친절/감성</strong><span>따뜻한 공감</span></button>
-          <button type="button" class="tone" data-tone="polite"><strong>👔 정중/깔끔</strong><span>담백한 사장님</span></button>
-          <button type="button" class="tone" data-tone="firm"><strong>🛡️ 단호/방어</strong><span>악플/오해 대처</span></button>
-          <button type="button" class="tone" data-tone="short"><strong>⚡ 1줄 초간단</strong><span>빠른 한 줄</span></button>
-        </div>
-      </section>
-
-      <section class="card">
-        <label for="review" style="margin-top:0">손님 리뷰</label>
-        <textarea id="review" placeholder="손님 리뷰를 붙여넣으세요"></textarea>
-        <button type="button" class="primary" id="generateBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> AI 답글 생성하기</button>
-      </section>
-
-      <div class="results" id="results">
-        <p class="empty">리뷰를 넣고 생성하면 답글 3개가 여기에 나타납니다.</p>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"><i class="fa-solid fa-store"></i></div>
+      <div>
+        <strong>리뷰랩</strong>
+        <span>사장님 답글 워크스페이스</span>
       </div>
     </div>
+    <div class="right">
+      <select class="store-select" id="storeSelect" aria-label="매장 선택"></select>
+      <span class="badge" id="statusBadge">AI 준비됨</span>
+    </div>
+  </header>
 
-    <aside class="dash" id="dash">
-      <h2>통합 설정 대시보드</h2>
-      <p class="hint">웹에 아이디만 저장해서는 배달특급에 답글이 올라가지 않습니다. 아래는 이 기기 저장용입니다. 실제 자동 등록은 PC에서 <b>python gui_app.py</b> 를 실행하세요. 목록에서는 <b>답글 여부 → 미작성</b> 후 조회해야 합니다.</p>
-      <div id="platList"></div>
-      <button type="button" class="save-dash" id="saveDash">계정 저장</button>
-      <button type="button" class="save-dash" id="downloadEnv" style="margin-top:8px;background:#191f28">PC 실행용 .env 내려받기</button>
-    </aside>
-  </div>
-  <nav class="nav" aria-label="화면 전환">
-    <button type="button" class="active" data-tab="write"><i class="fa-solid fa-wand-magic-sparkles"></i>답글</button>
-    <button type="button" data-tab="dash"><i class="fa-solid fa-table-columns"></i>대시보드</button>
-  </nav>
-  <div class="toast" id="toast" role="status"></div>
+  <main class="wrap">
+    <section class="panel">
+      <h2>리뷰 · 매장 설정</h2>
+      <div class="tabs" id="platformTabs"></div>
+      <label class="lbl">별점</label>
+      <div class="stars" id="stars"></div>
+      <div class="grid2">
+        <div>
+          <label class="lbl" for="menu">주문 메뉴 (선택)</label>
+          <input class="field" id="menu" placeholder="예: 소세지세트">
+        </div>
+        <div>
+          <label class="lbl" for="nick">고객 닉네임 (선택)</label>
+          <input class="field" id="nick" placeholder="예: 배고픈손님">
+        </div>
+      </div>
+      <label class="lbl" for="review">고객 리뷰</label>
+      <textarea class="field" id="review" placeholder="손님 리뷰를 붙여넣으세요"></textarea>
 
+      <details class="fold" open>
+        <summary>고정 문구 · 매장 정보</summary>
+        <label class="lbl" for="storeName">매장명</label>
+        <input class="field" id="storeName" placeholder="달떡볶이 파주운정점">
+        <div class="row">
+          <span>머리말 사용</span>
+          <label class="switch"><input type="checkbox" id="headOn" checked><span class="knob"></span></label>
+        </div>
+        <textarea class="field" id="headerText" style="min-height:64px"></textarea>
+        <div class="row">
+          <span>꼬리말 사용</span>
+          <label class="switch"><input type="checkbox" id="tailOn" checked><span class="knob"></span></label>
+        </div>
+        <textarea class="field" id="footerText" style="min-height:64px"></textarea>
+      </details>
+
+      <label class="lbl">톤앤매너</label>
+      <div class="tones" id="tones"></div>
+      <label class="lbl">매장 키워드</label>
+      <div class="tags" id="tags"></div>
+      <button class="go" id="generateBtn" type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> AI 답글 3안 생성</button>
+    </section>
+
+    <section class="panel">
+      <div class="preview-head">
+        <h2>생성 답글 미리보기</h2>
+        <span style="font-size:12px;color:var(--sub)" id="limitHint">권장 400자 이내</span>
+      </div>
+      <div class="cards" id="cards">
+        <p class="empty">별점·리뷰를 넣고 생성하면 여기에서 바로 고치고 복사할 수 있습니다.</p>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast"></div>
+  <script src="gemini-config.js"></script>
   <script>
-    const TONES = {
-      kind: '친절하고 감성적. 따뜻한 공감, 다정한 사장님 말투. 2~4줄.',
-      polite: '정중하고 깔끔. 담백한 사장님 말투. 과도한 이모지 금지. 2~3줄.',
-      firm: '악플·오해에 단호히 대처. 욕설 맞대응 금지. 사실·사과·개선을 차분하고 단호하게.',
-      short: '반드시 한 문장만. 인사와 핵심만.'
-    };
-    const KEYS = { api: 'geminiApiKey', prompt: 'customPrompt', tone: 'replyTone', dash: 'ownerDashboard' };
+    const DEFAULT_GEMINI_KEY = window.REVIEWLAB_GEMINI_KEY || '';
+    const LS = 'reviewlab.v2';
+    const LIMIT = 400;
     const PLATS = [
-      { key: 'baemin', name: '배달의민족', color: '#2AC1BC' },
-      { key: 'coupang', name: '쿠팡이츠', color: '#3478F6' },
-      { key: 'yogiyo', name: '요기요', color: '#FA0050' },
-      { key: 'ddangyo', name: '땡겨요', color: '#FF7A00' },
-      { key: 'special', name: '배달특급', color: '#7B61FF' }
+      { key: 'baemin', name: '배달의민족', color: 'var(--baemin)' },
+      { key: 'coupang', name: '쿠팡이츠', color: 'var(--coupang)' },
+      { key: 'yogiyo', name: '요기요', color: 'var(--yogiyo)' },
+      { key: 'ddangyo', name: '땡겨요', color: 'var(--ddangyo)' },
+      { key: 'special', name: '배달특급', color: 'var(--special)' }
     ];
-
+    const TONES = [
+      { key: 'kind', label: '다정다감 사장님', prompt: '다정하고 따뜻한 사장님. 공감과 고마움을 살갑게.' },
+      { key: 'polite', label: '깔끔·정중형', prompt: '군더더기 없는 정중한 사장님. 이모지 최소화.' },
+      { key: 'witty', label: '유쾌·위트형', prompt: '가볍고 유쾌하되 가볍지 않은 위트. 과한 개그 금지.' },
+      { key: 'firm', label: '악플·불만 단호 대응', prompt: '감정 싸움 없이 사실·사과·개선을 단호하고 차분하게.' },
+      { key: 'short', label: '초간단 1줄', prompt: '한 문장만. 인사와 핵심만.' }
+    ];
+    const TAGS = ['#국내산고춧가루', '#비법육수', '#푸짐한양', '#배달지연사과', '#리뷰이벤트', '#재주문감사'];
     const $ = (id) => document.getElementById(id);
 
-    document.querySelectorAll('.nav button').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.nav button').forEach((b) => b.classList.toggle('active', b === btn));
-        document.body.classList.toggle('tab-dash', btn.dataset.tab === 'dash');
-        window.scrollTo(0, 0);
-      });
-    });
-    const apiKeyEl = $('apiKey');
-    const promptEl = $('prompt');
-    const reviewEl = $('review');
-    const resultsEl = $('results');
-    const toastEl = $('toast');
-    const generateBtn = $('generateBtn');
-    let replyTone = localStorage.getItem(KEYS.tone) || 'kind';
+    const state = {
+      platform: 'baemin',
+      star: 5,
+      tone: 'kind',
+      tags: [],
+      stores: ['기본 매장'],
+      store: '기본 매장',
+      options: []
+    };
 
-    apiKeyEl.value = localStorage.getItem(KEYS.api) || '';
-    promptEl.value = localStorage.getItem(KEYS.prompt) || '';
-
-    function loadDash() {
-      try { return JSON.parse(localStorage.getItem(KEYS.dash) || '{}'); } catch { return {}; }
+    function load() {
+      try { return JSON.parse(localStorage.getItem(LS) || '{}'); } catch { return {}; }
+    }
+    function save() {
+      const data = {
+        storeName: $('storeName').value,
+        headerText: $('headerText').value,
+        footerText: $('footerText').value,
+        headOn: $('headOn').checked,
+        tailOn: $('tailOn').checked,
+        tone: state.tone,
+        platform: state.platform,
+        stores: state.stores,
+        store: $('storeSelect').value
+      };
+      localStorage.setItem(LS, JSON.stringify(data));
+    }
+    function toast(msg) {
+      const el = $('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove('show'), 2000);
+    }
+    function starStrategy(n) {
+      if (n <= 2) return '1~2점 불만. 진심 어린 사과, 개선 약속, 필요 시 보상·연락 안내. 재주문 강요 금지.';
+      if (n === 3) return '아쉬운 점과 좋은 점을 균형. 짧은 사과와 감사.';
+      return '4~5점 칭찬. 감사와 재주문·단골 유도.';
+    }
+    function wrapFixed(body) {
+      const name = $('storeName').value.trim() || '저희 매장';
+      let out = body.trim();
+      if ($('headOn').checked) {
+        const h = ($('headerText').value || '').split('[매장명]').join(name).trim();
+        if (h) out = h + '\n' + out;
+      }
+      if ($('tailOn').checked) {
+        const f = ($('footerText').value || '').split('[매장명]').join(name).trim();
+        if (f) out = out + '\n' + f;
+      }
+      return out;
     }
 
-    function renderDash() {
-      const saved = loadDash();
-      $('platList').innerHTML = PLATS.map((p) => {
-        const row = saved[p.key] || {};
-        const on = row.enabled !== false;
-        const has = !!(row.id);
-        return `
-          <div class="p-card" style="border-color:${p.color}" data-plat="${p.key}">
-            <div class="p-top">
-              <strong style="color:${p.color}">${p.name}</strong>
-              <label class="switch">
-                <input type="checkbox" class="p-on" ${on ? 'checked' : ''}>
-                <span class="slider" style="${on ? 'background:' + p.color : ''}"></span>
-              </label>
-            </div>
-            <label>아이디</label>
-            <input class="p-id" value="${(row.id || '').replace(/"/g, '&quot;')}" autocomplete="off">
-            <label>비밀번호</label>
-            <div class="pw-row">
-              <input class="p-pw" type="password" value="${(row.pw || '').replace(/"/g, '&quot;')}" autocomplete="off">
-              <button type="button" class="eye" aria-label="비밀번호 표시"><i class="fa-regular fa-eye"></i></button>
-            </div>
-            <div class="p-foot">
-              <span></span>
-              <span class="st ${has ? 'ok' : ''}">${has ? '저장됨' : '미저장'}</span>
-            </div>
-          </div>`;
+    function renderPlatforms() {
+      $('platformTabs').innerHTML = PLATS.map((p) =>
+        `<button type="button" class="ptab ${p.key === state.platform ? 'active' : ''}" data-k="${p.key}" style="${p.key === state.platform ? 'background:' + p.color : ''}">${p.name}</button>`
+      ).join('');
+      $('platformTabs').onclick = (e) => {
+        const b = e.target.closest('.ptab');
+        if (!b) return;
+        state.platform = b.dataset.k;
+        renderPlatforms();
+        save();
+      };
+    }
+    function renderStars() {
+      $('stars').innerHTML = [1,2,3,4,5].map((n) =>
+        `<button type="button" class="star ${n <= state.star ? 'on' : ''}" data-n="${n}">${'★'.repeat(n)}</button>`
+      ).join('');
+      $('stars').onclick = (e) => {
+        const b = e.target.closest('.star');
+        if (!b) return;
+        state.star = Number(b.dataset.n);
+        renderStars();
+      };
+    }
+    function renderTones() {
+      $('tones').innerHTML = TONES.map((t) =>
+        `<button type="button" class="tone ${t.key === state.tone ? 'active' : ''}" data-k="${t.key}">${t.label}</button>`
+      ).join('');
+      $('tones').onclick = (e) => {
+        const b = e.target.closest('.tone');
+        if (!b) return;
+        state.tone = b.dataset.k;
+        renderTones();
+        save();
+      };
+    }
+    function renderTags() {
+      $('tags').innerHTML = TAGS.map((t) =>
+        `<button type="button" class="tag ${state.tags.includes(t) ? 'on' : ''}">${t}</button>`
+      ).join('');
+      $('tags').onclick = (e) => {
+        const b = e.target.closest('.tag');
+        if (!b) return;
+        const t = b.textContent;
+        state.tags = state.tags.includes(t) ? state.tags.filter((x) => x !== t) : state.tags.concat(t);
+        renderTags();
+      };
+    }
+    function renderStores() {
+      const sel = $('storeSelect');
+      const name = $('storeName').value.trim();
+      if (name && !state.stores.includes(name)) state.stores.push(name);
+      sel.innerHTML = state.stores.map((s) => `<option ${s === state.store ? 'selected' : ''}>${s}</option>`).join('');
+    }
+    function renderCards() {
+      if (!state.options.length) {
+        $('cards').innerHTML = '<p class="empty">별점·리뷰를 넣고 생성하면 여기에서 바로 고치고 복사할 수 있습니다.</p>';
+        return;
+      }
+      const titles = ['옵션 1 · 공감형', '옵션 2 · 핵심형', '옵션 3 · 여유형'];
+      $('cards').innerHTML = state.options.map((text, i) => {
+        const n = text.length;
+        return `<article class="reply" data-i="${i}">
+          <h3>${titles[i]}</h3>
+          <textarea class="edit">${text.replace(/</g, '&lt;')}</textarea>
+          <div class="meta ${n > LIMIT ? 'warn' : ''}"><span>${n} / ${LIMIT}자</span><span>${n > LIMIT ? '글자수 초과 · 줄여주세요' : '플랫폼 붙여넣기 가능'}</span></div>
+          <div class="actions">
+            <button type="button" class="copy">원클릭 복사</button>
+            <button type="button" class="redo">이 톤으로 재생성</button>
+          </div>
+        </article>`;
       }).join('');
-
-      $('platList').querySelectorAll('.p-card').forEach((card) => {
-        const slider = card.querySelector('.slider');
-        const on = card.querySelector('.p-on');
-        const color = PLATS.find((x) => x.key === card.dataset.plat).color;
-        on.addEventListener('change', () => { slider.style.background = on.checked ? color : '#d1d6db'; });
-        card.querySelector('.eye').addEventListener('click', () => {
-          const inp = card.querySelector('.p-pw');
-          const hide = inp.type === 'password';
-          inp.type = hide ? 'text' : 'password';
-          card.querySelector('.eye i').className = hide ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+      $('cards').querySelectorAll('.reply').forEach((card) => {
+        const i = Number(card.dataset.i);
+        const ta = card.querySelector('.edit');
+        const meta = card.querySelector('.meta');
+        ta.addEventListener('input', () => {
+          state.options[i] = ta.value;
+          const n = ta.value.length;
+          meta.classList.toggle('warn', n > LIMIT);
+          meta.innerHTML = `<span>${n} / ${LIMIT}자</span><span>${n > LIMIT ? '글자수 초과 · 줄여주세요' : '플랫폼 붙여넣기 가능'}</span>`;
         });
+        card.querySelector('.copy').addEventListener('click', async () => {
+          try { await navigator.clipboard.writeText(ta.value); }
+          catch {
+            ta.select(); document.execCommand('copy');
+          }
+          toast('복사 완료! 배달앱에 붙여넣기 하세요');
+        });
+        card.querySelector('.redo').addEventListener('click', () => generate(i));
       });
-    }
-
-    function collectDash() {
-      const data = {};
-      $('platList').querySelectorAll('.p-card').forEach((card) => {
-        data[card.dataset.plat] = {
-          enabled: card.querySelector('.p-on').checked,
-          id: card.querySelector('.p-id').value.trim(),
-          pw: card.querySelector('.p-pw').value
-        };
-      });
-      return data;
-    }
-
-    renderDash();
-    $('saveDash').addEventListener('click', () => {
-      localStorage.setItem(KEYS.dash, JSON.stringify(collectDash()));
-      renderDash();
-      showToast('대시보드 계정을 저장했어요');
-    });
-    $('downloadEnv').addEventListener('click', () => {
-      const dash = collectDash();
-      const api = (apiKeyEl.value || localStorage.getItem(KEYS.api) || '').trim();
-      const guide = (promptEl.value || '').trim();
-      const lines = [
-        'GEMINI_API_KEY=' + api,
-        'REPLY_TONE=' + replyTone,
-        'STORE_GUIDE=' + guide,
-        'HEADFUL=true',
-        'BAEMIN_ID=' + (dash.baemin && dash.baemin.id || ''),
-        'BAEMIN_PW=' + (dash.baemin && dash.baemin.pw || ''),
-        'COUPANG_ID=' + (dash.coupang && dash.coupang.id || ''),
-        'COUPANG_PW=' + (dash.coupang && dash.coupang.pw || ''),
-        'YOGIYO_ID=' + (dash.yogiyo && dash.yogiyo.id || ''),
-        'YOGIYO_PW=' + (dash.yogiyo && dash.yogiyo.pw || ''),
-        'DDANGYO_ID=' + (dash.ddangyo && dash.ddangyo.id || ''),
-        'DDANGYO_PW=' + (dash.ddangyo && dash.ddangyo.pw || ''),
-        'SPECIAL_ID=' + (dash.special && dash.special.id || ''),
-        'SPECIAL_PW=' + (dash.special && dash.special.pw || '')
-      ];
-      const blob = new Blob([lines.join('\r\n')], { type: 'text/plain' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = '.env';
-      a.click();
-      showToast('.env 파일을 프로젝트 폴더에 넣어 주세요');
-    });
-
-    document.querySelectorAll('.tone').forEach((btn) => {
-      btn.classList.toggle('active', btn.dataset.tone === replyTone);
-      btn.addEventListener('click', () => {
-        replyTone = btn.dataset.tone;
-        localStorage.setItem(KEYS.tone, replyTone);
-        document.querySelectorAll('.tone').forEach((b) => b.classList.toggle('active', b === btn));
-      });
-    });
-
-    $('accToggle').addEventListener('click', () => {
-      const open = $('accBody').classList.toggle('show');
-      $('accToggle').classList.toggle('open', open);
-      $('accToggle').setAttribute('aria-expanded', String(open));
-    });
-
-    $('saveSettings').addEventListener('click', () => {
-      localStorage.setItem(KEYS.api, apiKeyEl.value.trim());
-      localStorage.setItem(KEYS.prompt, promptEl.value.trim());
-      showToast('설정을 저장했어요');
-    });
-
-    function showToast(msg) {
-      toastEl.textContent = msg;
-      toastEl.classList.add('show');
-      clearTimeout(showToast._t);
-      showToast._t = setTimeout(() => toastEl.classList.remove('show'), 1800);
     }
 
     function parseOptions(text) {
-      const blocks = {};
+      const found = {};
       ['OPTION_1', 'OPTION_2', 'OPTION_3'].forEach((tag) => {
-        const re = new RegExp('\\[' + tag + '\\]\\s*([\\s\\S]*?)(?=\\[OPTION_|$)');
-        const m = text.match(re);
-        if (m) blocks[tag] = m[1].trim();
+        const m = text.match(new RegExp('\\[' + tag + '\\]\\s*([\\s\\S]*?)(?=\\[OPTION_|$)'));
+        if (m) found[tag] = m[1].trim();
       });
-      if (Object.keys(blocks).length === 3) return [blocks.OPTION_1, blocks.OPTION_2, blocks.OPTION_3];
+      if (Object.keys(found).length === 3) return [found.OPTION_1, found.OPTION_2, found.OPTION_3].map(wrapFixed);
       const parts = text.split(/\n{2,}/).map((s) => s.replace(/^\[OPTION_\d\]\s*/, '').trim()).filter(Boolean);
       while (parts.length < 3) parts.push(text.trim());
-      return parts.slice(0, 3);
+      return parts.slice(0, 3).map(wrapFixed);
     }
 
-    function renderOptions(options) {
-      const titles = ['OPTION 1 · 공감형', 'OPTION 2 · 핵심형', 'OPTION 3 · 여유형'];
-      resultsEl.innerHTML = options.map((text, i) => `
-        <article class="option">
-          <h3><i class="fa-regular fa-comment-dots"></i> ${titles[i]}</h3>
-          <p>${text.replace(/</g, '&lt;')}</p>
-          <button type="button" class="copy" data-copy="${i}"><i class="fa-regular fa-copy"></i> 복사하기</button>
-        </article>
-      `).join('');
-      resultsEl.querySelectorAll('.copy').forEach((btn) => {
-        btn.addEventListener('click', async () => {
-          const idx = Number(btn.dataset.copy);
-          try {
-            await navigator.clipboard.writeText(options[idx]);
-          } catch {
-            const ta = document.createElement('textarea');
-            ta.value = options[idx];
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            ta.remove();
-          }
-          btn.classList.add('copied');
-          btn.innerHTML = '<i class="fa-solid fa-check"></i> 복사됨';
-          showToast('클립보드에 복사했어요');
-          setTimeout(() => {
-            btn.classList.remove('copied');
-            btn.innerHTML = '<i class="fa-regular fa-copy"></i> 복사하기';
-          }, 1600);
-        });
-      });
-    }
-
-    generateBtn.addEventListener('click', async () => {
-      const apiKey = (apiKeyEl.value || localStorage.getItem(KEYS.api) || '').trim();
-      const review = reviewEl.value.trim();
-      if (!apiKey) {
-        $('accBody').classList.add('show');
-        $('accToggle').classList.add('open');
-        showToast('Gemini API 키를 먼저 저장하세요');
-        return;
-      }
-      if (!review) {
-        showToast('손님 리뷰를 붙여넣으세요');
-        return;
-      }
-      generateBtn.disabled = true;
-      generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 생성 중...';
-      const shop = promptEl.value.trim() || '배달 음식점 사장님';
-      const prompt = `[역할] 배달 플랫폼 사장님 답글 작성.
-[톤] ${TONES[replyTone]}
-[매장 지침] ${shop}
-[고객 리뷰]
+    async function generate(onlyIndex) {
+      if (!DEFAULT_GEMINI_KEY) { toast('Gemini 설정 파일이 없습니다'); return; }
+      const review = $('review').value.trim();
+      if (!review) { toast('손님 리뷰를 붙여넣으세요'); return; }
+      const btn = $('generateBtn');
+      btn.disabled = true;
+      $('statusBadge').textContent = '생성 중';
+      const tone = TONES.find((t) => t.key === state.tone);
+      const plat = PLATS.find((p) => p.key === state.platform);
+      const prompt = `[역할] ${plat.name} 사장님 답글 작성. 본문만.
+[톤] ${tone.prompt}
+[별점] ${state.star}점
+[전략] ${starStrategy(state.star)}
+[매장] ${$('storeName').value || '매장'}
+[메뉴] ${$('menu').value || '미기재'}
+[닉네임] ${$('nick').value || '미기재'}
+[키워드] ${state.tags.join(' ') || '없음'}
+[리뷰]
 """
 ${review}
 """
-서로 다른 스타일의 사장님 답글 3개를 작성하라.
-반드시 아래 태그로만 구분해 출력하고, 태그 외 설명은 쓰지 마라.
+서로 다른 3안. 머리말/꼬리말은 넣지 말고 본문만.
 [OPTION_1]
-(공감·따뜻함 강조)
 [OPTION_2]
-(핵심만 담백하게)
-[OPTION_3]
-(감사 또는 사과 후 여운 있게)`;
-
+[OPTION_3]`;
       try {
         const res = await fetch(
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey),
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-          }
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(DEFAULT_GEMINI_KEY),
+          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) }
         );
         const data = await res.json();
         const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!text) throw new Error(data?.error?.message || '답글을 만들지 못했어요');
-        renderOptions(parseOptions(text));
+        if (!text) throw new Error(data?.error?.message || '생성 실패');
+        const all = parseOptions(text);
+        if (onlyIndex == null) state.options = all;
+        else state.options[onlyIndex] = all[onlyIndex] || all[0];
+        renderCards();
+        toast(onlyIndex == null ? '답글 3안을 만들었어요' : '해당 카드를 다시 만들었어요');
       } catch (err) {
-        showToast(err.message || '생성에 실패했어요');
+        toast(err.message || '생성에 실패했어요');
       } finally {
-        generateBtn.disabled = false;
-        generateBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> AI 답글 생성하기';
+        btn.disabled = false;
+        $('statusBadge').textContent = 'AI 준비됨';
       }
-    });
+    }
+
+    (function init() {
+      const saved = load();
+      $('storeName').value = saved.storeName || '';
+      $('headerText').value = saved.headerText || '안녕하세요! 맛있는 행복을 전하는 [매장명]입니다.';
+      $('footerText').value = saved.footerText || '❤️ 찜 누르고 리뷰 이벤트 참여 시 다음 주문 요청사항에 적어주세요!';
+      $('headOn').checked = saved.headOn !== false;
+      $('tailOn').checked = saved.tailOn !== false;
+      state.tone = saved.tone || 'kind';
+      state.platform = saved.platform || 'baemin';
+      state.stores = saved.stores && saved.stores.length ? saved.stores : ['기본 매장'];
+      state.store = saved.store || state.stores[0];
+      renderPlatforms(); renderStars(); renderTones(); renderTags(); renderStores();
+      ['storeName','headerText','footerText','headOn','tailOn'].forEach((id) => {
+        $(id).addEventListener('change', () => { renderStores(); save(); });
+        $(id).addEventListener('input', save);
+      });
+      $('storeSelect').addEventListener('change', () => {
+        state.store = $('storeSelect').value;
+        if (state.store !== '기본 매장') $('storeName').value = state.store;
+        save();
+      });
+      $('storeName').addEventListener('blur', () => {
+        const n = $('storeName').value.trim();
+        if (n) { state.store = n; if (!state.stores.includes(n)) state.stores.push(n); renderStores(); save(); }
+      });
+      $('generateBtn').addEventListener('click', () => generate());
+    })();
   </script>
 </body>
 </html>

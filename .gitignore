@@ -11,5 +11,6 @@ venv/
 !.env.example
 .secrets.key
 .settings.enc
+public/gemini-config.js
 *.log
 .DS_Store
