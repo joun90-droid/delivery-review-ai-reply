@@ -1,13 +1,17 @@
 {
   "manifest_version": 3,
   "name": "배달 리뷰 AI 자동 답글",
-  "version": "1.0.0",
-  "description": "모든 배달 플랫폼 리뷰에 AI 답글을 채워줍니다.",
+  "version": "1.1.0",
+  "description": "배민·쿠팡이츠·요기요 등 사장님 페이지에서 AI 답글을 작성합니다.",
   "permissions": [
     "storage"
   ],
+  "host_permissions": [
+    "*://generativelanguage.googleapis.com/*"
+  ],
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_title": "배달 리뷰 AI 자동 답글"
   },
   "content_scripts": [
     {
@@ -18,7 +22,8 @@
         "https://boss.ddangyo.com/*",
         "https://boss2.shinhan.com/*",
         "https://partner.payco.kr/*",
-        "https://www.specialdelivery.co.kr/*"
+        "https://www.specialdelivery.co.kr/*",
+        "https://specialdelivery.co.kr/*"
       ],
       "js": ["content.js"],
       "run_at": "document_idle"

@@ -2,245 +2,146 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     :root {
       --bg: #f4f5f7;
-      --card: #ffffff;
+      --card: #fff;
       --text: #191f28;
       --sub: #8b95a1;
-      --line: rgba(0, 0, 0, 0.06);
       --blue: #3182f6;
       --blue-soft: #e8f3ff;
-      --ok: #00c471;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
-      width: 360px;
+      width: 320px;
       background: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Pretendard", "Apple SD Gothic Neo", sans-serif;
-      -webkit-font-smoothing: antialiased;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Apple SD Gothic Neo", sans-serif;
+      padding: 16px;
     }
-
-    .wrap {
-      padding: 20px 16px 16px;
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
+    header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
     .logo {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      background: linear-gradient(160deg, #4b8bff 0%, #3182f6 100%);
-      display: grid;
-      place-items: center;
-      color: #fff;
-      font-size: 18px;
-      box-shadow: 0 8px 16px rgba(49, 130, 246, 0.28);
+      width: 36px; height: 36px; border-radius: 11px;
+      background: linear-gradient(160deg, #4b8bff, #3182f6);
+      color: #fff; display: grid; place-items: center; font-size: 16px;
     }
-
-    h1 {
-      font-size: 17px;
-      font-weight: 700;
-      letter-spacing: -0.4px;
-    }
-
-    .subtitle {
-      font-size: 12px;
-      color: var(--sub);
-      margin-top: 2px;
-      letter-spacing: -0.2px;
-    }
-
+    h1 { font-size: 15px; letter-spacing: -0.3px; }
+    .sub { font-size: 11px; color: var(--sub); margin-top: 2px; }
     .card {
       background: var(--card);
-      border-radius: 16px;
-      padding: 14px 14px 12px;
-      margin-bottom: 10px;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-    }
-
-    .label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--sub);
-      letter-spacing: -0.2px;
+      border-radius: 14px;
+      padding: 12px;
       margin-bottom: 8px;
     }
-
+    .label { font-size: 11px; font-weight: 600; color: var(--sub); margin-bottom: 6px; }
     input, textarea {
       width: 100%;
       border: 1px solid transparent;
       background: #f2f4f6;
-      border-radius: 12px;
-      padding: 11px 12px;
-      font-size: 14px;
-      color: var(--text);
+      border-radius: 10px;
+      padding: 10px;
+      font: inherit;
+      font-size: 13px;
       outline: none;
-      font-family: inherit;
-      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
     }
-
     input:focus, textarea:focus {
       background: #fff;
       border-color: var(--blue);
-      box-shadow: 0 0 0 4px rgba(49, 130, 246, 0.12);
+      box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.12);
     }
-
-    textarea {
-      height: 88px;
-      resize: none;
-      line-height: 1.45;
-    }
-
-    .tones {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .tone {
-      position: relative;
-      cursor: pointer;
-    }
-
-    .tone input {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .tone-inner {
+    textarea { height: 72px; resize: none; line-height: 1.4; }
+    .tones { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .tone { display: block; cursor: pointer; }
+    .tone input { position: absolute; opacity: 0; pointer-events: none; }
+    .tone span {
       display: block;
-      padding: 12px 10px;
-      border-radius: 14px;
+      padding: 9px 8px;
+      border-radius: 12px;
       background: #f2f4f6;
       border: 1.5px solid transparent;
-      text-align: left;
-      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
-    }
-
-    .tone-title {
-      display: block;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: -0.3px;
     }
-
-    .tone-desc {
-      display: block;
-      margin-top: 3px;
-      font-size: 11px;
-      color: var(--sub);
-      letter-spacing: -0.2px;
-    }
-
-    .tone input:checked + .tone-inner {
+    .tone small { display: block; font-weight: 500; color: var(--sub); margin-top: 2px; font-size: 10px; }
+    .tone input:checked + span {
       background: var(--blue-soft);
       border-color: var(--blue);
-      box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.08);
     }
-
-    .tone input:focus-visible + .tone-inner {
-      box-shadow: 0 0 0 4px rgba(49, 130, 246, 0.18);
-    }
-
-    button {
+    button#saveBtn {
       width: 100%;
       margin-top: 6px;
-      padding: 14px;
-      border: none;
-      border-radius: 14px;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px;
       background: var(--blue);
       color: #fff;
-      font-size: 15px;
+      font: inherit;
+      font-size: 14px;
       font-weight: 700;
-      letter-spacing: -0.3px;
       cursor: pointer;
-      font-family: inherit;
-      box-shadow: 0 8px 18px rgba(49, 130, 246, 0.28);
-      transition: transform 0.12s, filter 0.12s;
     }
-
-    button:hover { filter: brightness(1.04); }
-    button:active { transform: scale(0.985); }
-
-    #status {
-      min-height: 18px;
-      margin-top: 10px;
-      text-align: center;
+    #toast {
+      position: fixed;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%) translateY(8px);
+      background: #191f28;
+      color: #fff;
       font-size: 12px;
       font-weight: 600;
-      color: var(--ok);
+      padding: 8px 14px;
+      border-radius: 999px;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.2s ease;
+      white-space: nowrap;
     }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="logo" aria-hidden="true">✦</div>
-      <div>
-        <h1>배달 리뷰 AI</h1>
-        <p class="subtitle">사장님 답글 톤과 API를 저장해요</p>
-      </div>
-    </header>
-
-    <div class="card">
-      <div class="label">Gemini API 키</div>
-      <input type="password" id="apiKey" placeholder="API 키를 붙여넣기" autocomplete="off">
+  <header>
+    <div class="logo">✦</div>
+    <div>
+      <h1>배달 리뷰 AI</h1>
+      <p class="sub">API 키와 답글 톤을 저장하세요</p>
     </div>
+  </header>
 
-    <div class="card">
-      <div class="label">답글 톤</div>
-      <div class="tones" role="radiogroup" aria-label="답글 톤 선택">
-        <label class="tone">
-          <input type="radio" name="replyTone" value="kind">
-          <span class="tone-inner">
-            <span class="tone-title">친절 / 감성</span>
-            <span class="tone-desc">따뜻하고 공감</span>
-          </span>
-        </label>
-        <label class="tone">
-          <input type="radio" name="replyTone" value="polite" checked>
-          <span class="tone-inner">
-            <span class="tone-title">정중 / 깔끔</span>
-            <span class="tone-desc">담백한 사장님</span>
-          </span>
-        </label>
-        <label class="tone">
-          <input type="radio" name="replyTone" value="firm">
-          <span class="tone-inner">
-            <span class="tone-title">악플 단호 대처</span>
-            <span class="tone-desc">차분하고 단호</span>
-          </span>
-        </label>
-        <label class="tone">
-          <input type="radio" name="replyTone" value="short">
-          <span class="tone-inner">
-            <span class="tone-title">1줄 초간단</span>
-            <span class="tone-desc">한 문장만</span>
-          </span>
-        </label>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="label">매장 스타일 / 답글 규칙</div>
-      <textarea id="prompt" placeholder="예: 매장명, 메뉴 강조, 이모지 사용 여부"></textarea>
-    </div>
-
-    <button id="saveBtn" type="button">설정 저장</button>
-    <div id="status"></div>
+  <div class="card">
+    <div class="label">Gemini API 키</div>
+    <input type="password" id="apiKey" placeholder="API 키 붙여넣기" autocomplete="off">
   </div>
+
+  <div class="card">
+    <div class="label">매장 기본 톤앤매너</div>
+    <div class="tones">
+      <label class="tone">
+        <input type="radio" name="replyTone" value="kind">
+        <span>친절/감성<small>따뜻한 공감</small></span>
+      </label>
+      <label class="tone">
+        <input type="radio" name="replyTone" value="polite" checked>
+        <span>정중/깔끔<small>담백한 사장님</small></span>
+      </label>
+      <label class="tone">
+        <input type="radio" name="replyTone" value="firm">
+        <span>악플 단호 대처<small>차분하고 단호</small></span>
+      </label>
+      <label class="tone">
+        <input type="radio" name="replyTone" value="short">
+        <span>1줄 초간단<small>한 문장만</small></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">매장 추가 정보/지침</div>
+    <textarea id="prompt" placeholder="예: 떡볶이 맛집, 서비스 음료 언급"></textarea>
+  </div>
+
+  <button type="button" id="saveBtn">설정 저장</button>
+  <div id="toast">저장 완료</div>
   <script src="popup.js"></script>
 </body>
 </html>
