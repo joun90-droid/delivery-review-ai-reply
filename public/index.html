@@ -2,59 +2,299 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>배달 리뷰 AI 자동 답글</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>리뷰 답글 AI</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
-    :root { --bg:#f4f5f7; --text:#191f28; --sub:#8b95a1; --blue:#3182f6; }
-    * { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg: #f4f5f7;
+      --card: #ffffff;
+      --text: #191f28;
+      --sub: #8b95a1;
+      --line: rgba(0,0,0,.06);
+      --blue: #3182f6;
+      --blue-soft: #e8f3ff;
+      --ok: #00c471;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
     body {
-      min-height:100vh;
-      background:var(--bg);
-      color:var(--text);
-      font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo",sans-serif;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:32px 16px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Pretendard", "Apple SD Gothic Neo", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      padding: 20px 16px 40px;
     }
-    .card {
-      width:100%;
-      max-width:420px;
-      background:#fff;
-      border-radius:24px;
-      padding:32px 28px;
-      box-shadow:0 1px 3px rgba(0,0,0,.06);
-    }
+    .app { max-width: 560px; margin: 0 auto; }
+    header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
     .logo {
-      width:48px; height:48px; border-radius:14px;
-      background:linear-gradient(160deg,#4b8bff,#3182f6);
-      display:grid; place-items:center; color:#fff; font-size:22px;
-      margin-bottom:16px;
+      width: 44px; height: 44px; border-radius: 14px;
+      background: linear-gradient(160deg, #4b8bff, #3182f6);
+      color: #fff; display: grid; place-items: center; font-size: 18px;
+      box-shadow: 0 8px 16px rgba(49,130,246,.28);
     }
-    h1 { font-size:22px; letter-spacing:-.5px; margin-bottom:8px; }
-    p { font-size:15px; color:var(--sub); line-height:1.55; margin-bottom:22px; }
-    ol { padding-left:18px; color:var(--text); font-size:14px; line-height:1.7; margin-bottom:24px; }
-    a.btn {
-      display:block; text-align:center; text-decoration:none;
-      background:var(--blue); color:#fff; font-weight:700;
-      padding:14px; border-radius:14px;
+    h1 { font-size: 18px; letter-spacing: -.4px; }
+    .sub { font-size: 12px; color: var(--sub); margin-top: 2px; }
+    .card {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    }
+    .acc-head {
+      width: 100%; border: 0; background: transparent;
+      display: flex; align-items: center; justify-content: space-between;
+      font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; color: var(--text);
+    }
+    .acc-head i { color: var(--sub); transition: transform .2s; }
+    .acc-head.open i { transform: rotate(180deg); }
+    .acc-body { display: none; padding-top: 12px; }
+    .acc-body.show { display: block; }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--sub); margin: 10px 0 6px; }
+    input, textarea {
+      width: 100%; border: 1px solid transparent; background: #f2f4f6;
+      border-radius: 12px; padding: 12px; font: inherit; font-size: 14px; color: var(--text); outline: none;
+    }
+    input:focus, textarea:focus {
+      background: #fff; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(49,130,246,.12);
+    }
+    textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
+    .tones { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .tone {
+      border: 1.5px solid transparent; background: #f2f4f6; border-radius: 14px;
+      padding: 12px 10px; text-align: left; cursor: pointer; font: inherit;
+    }
+    .tone strong { display: block; font-size: 13px; }
+    .tone span { display: block; font-size: 11px; color: var(--sub); margin-top: 3px; }
+    .tone.active { background: var(--blue-soft); border-color: var(--blue); }
+    .primary {
+      width: 100%; margin-top: 10px; border: 0; border-radius: 14px; padding: 14px;
+      background: linear-gradient(135deg, #5b8def, #3182f6);
+      color: #fff; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 8px 18px rgba(49,130,246,.28);
+    }
+    .primary:disabled { opacity: .6; cursor: default; }
+    .results { display: grid; gap: 10px; }
+    .option {
+      background: var(--card); border-radius: 18px; padding: 14px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    }
+    .option h3 { font-size: 13px; color: var(--blue); margin-bottom: 8px; }
+    .option p { font-size: 14.5px; line-height: 1.6; white-space: pre-wrap; }
+    .copy {
+      margin-top: 12px; width: 100%; border: 0; border-radius: 12px; padding: 11px;
+      background: #f2f4f6; font: inherit; font-weight: 700; font-size: 13px; cursor: pointer;
+    }
+    .copy.copied { background: #e8fff4; color: var(--ok); }
+    .empty { text-align: center; color: var(--sub); font-size: 13px; padding: 18px 8px; }
+    .toast {
+      position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px);
+      background: #191f28; color: #fff; padding: 11px 16px; border-radius: 999px;
+      font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none;
+      transition: .22s ease; z-index: 20; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    @media (max-width: 420px) {
+      body { padding: 16px 12px 36px; }
+      .tones { gap: 6px; }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="logo">✦</div>
-    <h1>배달 리뷰 AI 자동 답글</h1>
-    <p>배민·쿠팡이츠 등 사장님 페이지에서 리뷰 답글을 AI로 작성하는 크롬 확장 프로그램입니다.</p>
-    <ol>
-      <li>Chrome에서 확장 프로그램 개발자 모드를 켭니다.</li>
-      <li>GitHub에서 폴더를 받아 “압축해제된 확장 프로그램을 로드”합니다.</li>
-      <li>팝업에서 Gemini API 키와 답글 톤을 저장합니다.</li>
-    </ol>
-    <a class="btn" id="gh" href="#">GitHub에서 보기</a>
+  <div class="app">
+    <header>
+      <div class="logo"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+      <div>
+        <h1>실시간 AI 리뷰 답글</h1>
+        <p class="sub">스마트폰 · PC에서 바로 작성하고 복사하세요</p>
+      </div>
+    </header>
+
+    <section class="card">
+      <button type="button" class="acc-head" id="accToggle" aria-expanded="false">
+        <span><i class="fa-solid fa-gear" style="margin-right:8px;color:#3182f6"></i>설정 (API 키 · 매장 지침)</span>
+        <i class="fa-solid fa-chevron-down"></i>
+      </button>
+      <div class="acc-body" id="accBody">
+        <label for="apiKey">Gemini API 키</label>
+        <input type="password" id="apiKey" placeholder="API 키를 붙여넣기" autocomplete="off">
+        <label for="prompt">매장 기본 지침</label>
+        <textarea id="prompt" placeholder="예: 매장명, 메뉴, 이모지 사용 여부"></textarea>
+        <button type="button" class="primary" id="saveSettings" style="margin-top:12px">설정 저장</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <label style="margin-top:0">톤앤매너</label>
+      <div class="tones" id="tones">
+        <button type="button" class="tone active" data-tone="kind"><strong>😊 친절/감성</strong><span>따뜻한 공감</span></button>
+        <button type="button" class="tone" data-tone="polite"><strong>👔 정중/깔끔</strong><span>담백한 사장님</span></button>
+        <button type="button" class="tone" data-tone="firm"><strong>🛡️ 단호/방어</strong><span>악플/오해 대처</span></button>
+        <button type="button" class="tone" data-tone="short"><strong>⚡ 1줄 초간단</strong><span>빠른 한 줄</span></button>
+      </div>
+    </section>
+
+    <section class="card">
+      <label for="review" style="margin-top:0">손님 리뷰</label>
+      <textarea id="review" placeholder="손님 리뷰를 붙여넣으세요"></textarea>
+      <button type="button" class="primary" id="generateBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> AI 답글 생성하기</button>
+    </section>
+
+    <div class="results" id="results">
+      <p class="empty">리뷰를 넣고 생성하면 답글 3개가 여기에 나타납니다.</p>
+    </div>
   </div>
+  <div class="toast" id="toast" role="status"></div>
+
   <script>
-    document.getElementById('gh').href = 'https://github.com/joun90-droid/delivery-review-ai-reply';
+    const TONES = {
+      kind: '친절하고 감성적. 따뜻한 공감, 다정한 사장님 말투. 2~4줄.',
+      polite: '정중하고 깔끔. 담백한 사장님 말투. 과도한 이모지 금지. 2~3줄.',
+      firm: '악플·오해에 단호히 대처. 욕설 맞대응 금지. 사실·사과·개선을 차분하고 단호하게.',
+      short: '반드시 한 문장만. 인사와 핵심만.'
+    };
+    const KEYS = { api: 'geminiApiKey', prompt: 'customPrompt', tone: 'replyTone' };
+
+    const $ = (id) => document.getElementById(id);
+    const apiKeyEl = $('apiKey');
+    const promptEl = $('prompt');
+    const reviewEl = $('review');
+    const resultsEl = $('results');
+    const toastEl = $('toast');
+    const generateBtn = $('generateBtn');
+    let replyTone = localStorage.getItem(KEYS.tone) || 'kind';
+
+    apiKeyEl.value = localStorage.getItem(KEYS.api) || '';
+    promptEl.value = localStorage.getItem(KEYS.prompt) || '';
+
+    document.querySelectorAll('.tone').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.tone === replyTone);
+      btn.addEventListener('click', () => {
+        replyTone = btn.dataset.tone;
+        localStorage.setItem(KEYS.tone, replyTone);
+        document.querySelectorAll('.tone').forEach((b) => b.classList.toggle('active', b === btn));
+      });
+    });
+
+    $('accToggle').addEventListener('click', () => {
+      const open = $('accBody').classList.toggle('show');
+      $('accToggle').classList.toggle('open', open);
+      $('accToggle').setAttribute('aria-expanded', String(open));
+    });
+
+    $('saveSettings').addEventListener('click', () => {
+      localStorage.setItem(KEYS.api, apiKeyEl.value.trim());
+      localStorage.setItem(KEYS.prompt, promptEl.value.trim());
+      showToast('설정을 저장했어요');
+    });
+
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toastEl.classList.remove('show'), 1800);
+    }
+
+    function parseOptions(text) {
+      const blocks = {};
+      ['OPTION_1', 'OPTION_2', 'OPTION_3'].forEach((tag) => {
+        const re = new RegExp('\\[' + tag + '\\]\\s*([\\s\\S]*?)(?=\\[OPTION_|$)');
+        const m = text.match(re);
+        if (m) blocks[tag] = m[1].trim();
+      });
+      if (Object.keys(blocks).length === 3) return [blocks.OPTION_1, blocks.OPTION_2, blocks.OPTION_3];
+      const parts = text.split(/\n{2,}/).map((s) => s.replace(/^\[OPTION_\d\]\s*/, '').trim()).filter(Boolean);
+      while (parts.length < 3) parts.push(text.trim());
+      return parts.slice(0, 3);
+    }
+
+    function renderOptions(options) {
+      const titles = ['OPTION 1 · 공감형', 'OPTION 2 · 핵심형', 'OPTION 3 · 여유형'];
+      resultsEl.innerHTML = options.map((text, i) => `
+        <article class="option">
+          <h3><i class="fa-regular fa-comment-dots"></i> ${titles[i]}</h3>
+          <p>${text.replace(/</g, '&lt;')}</p>
+          <button type="button" class="copy" data-copy="${i}"><i class="fa-regular fa-copy"></i> 복사하기</button>
+        </article>
+      `).join('');
+      resultsEl.querySelectorAll('.copy').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const idx = Number(btn.dataset.copy);
+          try {
+            await navigator.clipboard.writeText(options[idx]);
+          } catch {
+            const ta = document.createElement('textarea');
+            ta.value = options[idx];
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+          }
+          btn.classList.add('copied');
+          btn.innerHTML = '<i class="fa-solid fa-check"></i> 복사됨';
+          showToast('클립보드에 복사했어요');
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = '<i class="fa-regular fa-copy"></i> 복사하기';
+          }, 1600);
+        });
+      });
+    }
+
+    generateBtn.addEventListener('click', async () => {
+      const apiKey = (apiKeyEl.value || localStorage.getItem(KEYS.api) || '').trim();
+      const review = reviewEl.value.trim();
+      if (!apiKey) {
+        $('accBody').classList.add('show');
+        $('accToggle').classList.add('open');
+        showToast('Gemini API 키를 먼저 저장하세요');
+        return;
+      }
+      if (!review) {
+        showToast('손님 리뷰를 붙여넣으세요');
+        return;
+      }
+      generateBtn.disabled = true;
+      generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 생성 중...';
+      const shop = promptEl.value.trim() || '배달 음식점 사장님';
+      const prompt = `[역할] 배달 플랫폼 사장님 답글 작성.
+[톤] ${TONES[replyTone]}
+[매장 지침] ${shop}
+[고객 리뷰]
+"""
+${review}
+"""
+서로 다른 스타일의 사장님 답글 3개를 작성하라.
+반드시 아래 태그로만 구분해 출력하고, 태그 외 설명은 쓰지 마라.
+[OPTION_1]
+(공감·따뜻함 강조)
+[OPTION_2]
+(핵심만 담백하게)
+[OPTION_3]
+(감사 또는 사과 후 여운 있게)`;
+
+      try {
+        const res = await fetch(
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey),
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          }
+        );
+        const data = await res.json();
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) throw new Error(data?.error?.message || '답글을 만들지 못했어요');
+        renderOptions(parseOptions(text));
+      } catch (err) {
+        showToast(err.message || '생성에 실패했어요');
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> AI 답글 생성하기';
+      }
+    });
   </script>
 </body>
 </html>
