@@ -2,7 +2,12 @@ firebase-debug.log
 .firebase/
 .firebaserc.bak
 node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
 .env
-.env.*
+.env.local
+!.env.example
 *.log
 .DS_Store
